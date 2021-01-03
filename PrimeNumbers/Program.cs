@@ -45,11 +45,13 @@ namespace PrimeNumbers
 
         private static async Task Main(string[] args)
         {
+            Console.WriteLine($"{nameof(Main)}, ThreadId {Thread.CurrentThread.ManagedThreadId}");
+
             var stopwatch = Stopwatch.StartNew();
 
             #region Synchronous
-            //var count = SynchronousMethod();
-            //Console.WriteLine(count);
+            var count = SynchronousMethod();
+            Console.WriteLine(count);
 
             //41538
             //0:00:18,4202546
@@ -82,8 +84,8 @@ namespace PrimeNumbers
             #endregion
 
             #region ParallelInvoke
-            ParallelInvokeMethod();
-            Console.WriteLine(_count);
+            //ParallelInvokeMethod();
+            //Console.WriteLine(_count);
 
             //from 350001 to 400000, 10, 1
             //from 1 to 50000, 1, 6
@@ -156,12 +158,17 @@ namespace PrimeNumbers
                 current += ChunkSize;
             }
 
-            Parallel.Invoke(actions.ToArray());
+            var options = new ParallelOptions
+            {
+                MaxDegreeOfParallelism = -1 // By default, -1, With 1 will be so slow than synchronous method
+            };
+
+            Parallel.Invoke(options, actions.ToArray());
         }
 
         private static void InvokeMethodFromTo(int from, int to)
         {
-            Console.WriteLine($"from {from} to {to}, {Thread.CurrentThread.ManagedThreadId}, {GetCurrentProcessorNumber()}");
+            Console.WriteLine($"from {from} to {to}, ThreadId {Thread.CurrentThread.ManagedThreadId}, CPU # {GetCurrentProcessorNumber()}");
 
             var count = 0;
 
@@ -198,7 +205,7 @@ namespace PrimeNumbers
         {
             return await Task.Run(() =>
             {
-                Console.WriteLine($"from {from} to {to}, {Thread.CurrentThread.ManagedThreadId}, {GetCurrentProcessorNumber()}");
+                Console.WriteLine($"from {from} to {to}, ThreadId {Thread.CurrentThread.ManagedThreadId}, CPU # {GetCurrentProcessorNumber()}");
 
                 var count = 0;
 
